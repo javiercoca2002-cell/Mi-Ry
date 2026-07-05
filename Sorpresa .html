@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Para mi amor en Qatar ❤️</title>
+
+    <!-- Leaflet.js (mapa) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+    <!-- Leaflet Polyline (curva) -->
+    <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/leaflet-polylinedecorator.js">
+    </script>
+
+    <style>
+        /* ========== ESTILOS GENERALES ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0b0e1a 0%, #1a1f33 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .contenedor {
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ========== TARJETA PRINCIPAL ========== */
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            border-radius: 48px;
+            padding: 35px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            color: #f0e9d8;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .nombre {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #facc7c;
+            margin: 5px 0 15px 0;
+        }
+
+        .banderas {
+            font-size: 2.5rem;
+            letter-spacing: 14px;
+            margin-bottom: 10px;
+        }
+
+        /* ========== CONTADOR ========== */
+        .contador {
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 60px;
+            padding: 25px 15px;
+            margin: 15px 0;
+            border: 1px solid rgba(250, 204, 124, 0.2);
+        }
+
+        .numero {
+            font-size: 4.2rem;
+            font-weight: 900;
+            color: #facc7c;
+            line-height: 1;
+            text-shadow: 0 0 30px rgba(250, 204, 124, 0.25);
+            letter-spacing: 4px;
+        }
+
+        .etiqueta {
+            color: #b8b0a0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin-top: 6px;
+        }
+
+        /* ========== HUSOS ========== */
+        .husos {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 12px 0 18px 0;
+            font-size: 0.85rem;
+            color: #cbc3b0;
+            flex-wrap: wrap;
+        }
+
+        .husos span {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* ========== FRASE ========== */
+        .frase {
+            background: rgba(250, 204, 124, 0.06);
+            border-left: 3px solid #facc7c;
+            padding: 18px 16px;
+            border-radius: 12px;
+            margin: 15px 0;
+            color: #e8ddd0;
+            font-style: italic;
+            font-size: 1rem;
+            min-height: 75px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+        }
+
+        /* ========== BOTONES ========== */
+        .boton {
+            background: linear-gradient(135deg, #facc7c, #f5b34b);
+            border: none;
+            color: #1a1f33;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 13px 25px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(250, 204, 124, 0.2);
+            width: 100%;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        .boton:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(250, 204, 124, 0.35);
+        }
+
+        .boton:active {
+            transform: scale(0.97);
+        }
+
+        .boton-secundario {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f0e9d8;
+            box-shadow: none;
+        }
+
+        .boton-secundario:hover {
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: none;
+        }
+
+        /* ========== MAPA ========== */
+        .mapa-section {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 32px;
+            padding: 18px 18px 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 25px;
+        }
+
+        #mapa {
+            height: 280px;
+            border-radius: 24px;
+            border: 2px solid rgba(250, 204, 124, 0.15);
+            background: #0b0e1a;
+        }
+
+        .distancia {
+            text-align: center;
+            color: #cbc3b0;
+            font-size: 0.9rem;
+            padding: 10px 0 4px 0;
+            letter-spacing: 1px;
+        }
+
+        .distancia strong {
+            color: #facc7c;
+            font-size: 1.1rem;
+        }
+
+        /* ========== LÍNEA DE TIEMPO ========== */
+        .timeline-section {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 32px;
+            padding: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 25px;
+        }
+
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 14px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .timeline-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+        .timeline-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+        }
+        .timeline-grid::-webkit-scrollbar-thumb {
+            background: #facc7c;
+            border-radius: 10px;
+        }
+
+        .timeline-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-left: 3px solid #facc7c;
+            transition: all 0.2s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .timeline-item img {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(250, 204, 124, 0.3);
+            flex-shrink: 0;
+        }
+
+        .timeline-item .info {
+            text-align: left;
+            flex: 1;
+        }
+
+        .timeline-item .fecha {
+            color: #facc7c;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .timeline-item .texto {
+            color: #e0d8c8;
+            font-size: 0.92rem;
+            margin-top: 2px;
+        }
+
+        .sin-fotos {
+            color: #7a7a8e;
+            text-align: center;
+            padding: 25px 10px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+
+        /* ========== CONTADOR DE DÍAS JUNTOS ========== */
+        .dias-juntos {
+            background: rgba(250, 204, 124, 0.05);
+            border-radius: 20px;
+            padding: 14px;
+            margin: 12px 0 8px 0;
+            border: 1px dashed rgba(250, 204, 124, 0.15);
+            color: #d0c8b8;
+            font-size: 0.95rem;
+        }
+
+        .dias-juntos strong {
+            color: #facc7c;
+            font-size: 1.2rem;
+        }
+
+        /* ========== CONFETI CANVAS ========== */
+        #confeti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 500px) {
+            .card {
+                padding: 25px 16px;
+            }
+            .numero {
+                font-size: 3.2rem;
+            }
+            .nombre {
+                font-size: 1.4rem;
+            }
+            .husos {
+                gap: 10px;
+                font-size: 0.75rem;
+            }
+            #mapa {
+                height: 200px;
+            }
+            .timeline-item {
+                padding: 10px 12px;
+            }
+            .timeline-item img {
+                width: 44px;
+                height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====== CANVAS CONFETI ====== -->
+    <canvas id="confeti-canvas"></canvas>
+
+    <div class="contenedor">
+
+        <!-- ====== TARJETA PRINCIPAL ====== -->
+        <div class="card">
+            <h1>🌹 Para mi amor</h1>
+            <div class="nombre" id="nombre-amor">Ryhanna</div>
+            <div class="banderas">🇨🇺 ✈️ 🇶🇦</div>
+
+            <div class="contador">
+                <div class="numero" id="dias">71</div>
+                <div class="etiqueta">Días para verte</div>
+            </div>
+
+            <div class="husos">
+                <span>🇶🇦 Qatar: <span id="hora-qatar">--:--</span></span>
+                <span>🇨🇺 Cuba: <span id="hora-cuba">--:--</span></span>
+            </div>
+
+            <div class="frase" id="frase">
+                Cargando mensaje especial...
+            </div>
+
+            <button class="boton" id="boton-frase">💛 Nueva frase del día</button>
+            <button class="boton boton-secundario" id="boton-extrañar">💔 Presiona si me extrañas</button>
+        </div>
+
+        <!-- ====== MAPA ====== -->
+        <div class="mapa-section">
+            <div id="mapa"></div>
+            <div class="distancia">
+                📏 Distancia: <strong id="distancia-km">calculando...</strong> km
+                <span style="margin-left:12px;">⏰ Diferencia: <strong id="diferencia-horaria">7</strong> horas</span>
+            </div>
+        </div>
+
+        <!-- ====== LÍNEA DE TIEMPO CON FOTOS ====== -->
+        <div class="timeline-section">
+            <h3 style="color:#f0e9d8; font-weight:300; letter-spacing:2px; font-size:1.1rem;">
+                📸 Nuestra historia en fotos
+            </h3>
+            <button class="boton boton-secundario" id="boton-timeline" style="font-size:0.85rem; padding:10px; margin-top:6px;">
+                🖼️ Mostrar línea de tiempo
+            </button>
+
+            <div class="dias-juntos" id="dias-juntos">
+                💕 Llevamos <strong id="contador-juntos">calculando...</strong> días juntos
+            </div>
+
+            <div class="timeline-grid" id="timeline-grid">
+                <div class="sin-fotos">
+                    Haz clic en "Mostrar línea de tiempo" para ver nuestros momentos ❤️
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== FOOTER ====== -->
+        <div style="text-align:center; color:#4a4a5e; font-size:0.7rem; letter-spacing:1px; padding:8px 0 20px 0;">
+            Hecho con ❤️ desde Cuba para ti, mi Ry
+        </div>
+
+    </div>
+
+    <script>
+        // ================================================================
+        //  CONFIGURACIÓN (¡CAMBIA AQUÍ LO QUE NECESITES!)
+        // ================================================================
+
+        // Fecha de vuelta (¡CAMBIA EL AÑO si es 2025!)
+        const FECHA_VUELTA = new Date('2026-09-10T00:00:00').getTime();
+
+        // Fecha en que comenzaron la relación (para el contador de días juntos)
+        const FECHA_INICIO_RELACION = new Date('2025-02-18'); // ¡CAMBIA ESTA FECHA!
+
+        // Coordenadas (La Habana, Cuba y Doha, Qatar)
+        const CIUDADES = {
+            cuba: { lat: 23.1136, lng: -82.3666, nombre: 'Sancti Spíritus' },
+            qatar: { lat: 25.2854, lng: 51.5310, nombre: 'Doha' }
+        };
+
+        // ================================================================
+        //  DATOS DE LA LÍNEA DE TIEMPO (fotos subidas a Imgur)
+        // ================================================================
+        // Sube tus fotos a Imgur (gratis, sin cuenta) y pega los enlaces directos aquí.
+        // Formato: { fecha: 'DD/MM/AAAA', texto: 'descripción', img: 'URL_de_Imgur' }
+        const FOTOS_TIMELINE = [{
+            fecha: '27/02/2025',
+            texto: 'El día que todo empezó ❤️',
+            img: 'https://i.postimg.cc/mkPcVkyt/IMG-20250227-WA0069.jpg' // <-- CAMBIA ESTO
+        }, {
+            fecha: '19/03/2025',
+            texto: 'Nuestros primeros besos',
+            img: 'https://i.postimg.cc/FHyYT23L/IMG-20250319-WA0010.jpg' // <-- CAMBIA ESTO
+        }, {
+            fecha: '09/08/2025',
+            texto: 'Nuestro primer viaje juntos',
+            img: 'https://i.postimg.cc/1t2FkDtC/IMG-4111.avif' // <-- CAMBIA ESTO
+        }, {
+            fecha: '21/02/2026',
+            texto: 'Un hotel juntos ✨',
+            img: 'https://i.postimg.cc/L82PF99S/IMG-20260219-WA0019.jpg' // <-- CAMBIA ESTO
+        }, {
+            fecha: '23/02/2026',
+            texto: 'Un día random de amor',
+            img: 'https://i.postimg.cc/rFCdJB16/IMG-20260221-WA0041.jpg' // <-- CAMBIA ESTO
+        }, {
+            fecha: '30/06/2026',
+            texto: 'El día que te fuiste a Qatar... te extraño',
+            img: 'https://i.postimg.cc/9M70qKmL/IMG-20260704-WA0160.jpg' // <-- CAMBIA ESTO
+        }];
+
+        // Si no tienes fotos, usa este array vacío y se mostrará un mensaje bonito
+        // const FOTOS_TIMELINE = [];
+
+        // ================================================================
+        //  MENSAJES POR DÍA (timeline de ausencia)
+        // ================================================================
+        const MENSAJES = {
+            1: '1 de julio: Te fuiste... el día está triste, pero tu sonrisa vive en mi mente.',
+            5: '5 de julio: Ya 5 días. Qatar es grande, pero mi corazón es más grande extrañándote.',
+            10: '10 de julio: Diez días. Cada hora sin ti se siente como una eternidad.',
+            15: '15 de julio: Quince días, mi amor. Parecen 15 años. Te extraño con el alma.',
+            20: '20 de julio: Veinte días. Aquí el calor es de extrañarte, no del sol.',
+            25: '25 de julio: 25 días... ya casi un mes. ¿Cómo es posible extrañar tanto?',
+            31: '31 de julio: ¡Un mes! Cuba te espera, pero nadie te espera como yo.',
+            35: '5 de agosto: Más de un mes. El tiempo pasa lento, pero el amor no se cansa.',
+            40: '10 de agosto: 40 días. Mitad del camino... ya falta menos, mi amor.',
+            45: '15 de agosto: 45 días. Cada día que pasa es un día menos sin ti.',
+            50: '20 de agosto: 50 días. ¡Ya falta poquito! Prepara el abrazo más largo.',
+            55: '25 de agosto: 55 días. El aeropuerto ya me conoce de tanto mirarlo.',
+            60: '30 de agosto: 60 días. Faltan solo 11 días... esto es real, estás volviendo.',
+            65: '4 de septiembre: 65 días. 5 días para verte. No quiero dormir, quiero que llegues.',
+            66: '5 de septiembre: 66 días. 4 días... el corazón me late más fuerte.',
+            67: '6 de septiembre: 67 días. 3 días. Ya casi, ya casi, ya casi...',
+            68: '7 de septiembre: 68 días. 2 días. No sé si voy a poder dormir.',
+            69: '8 de septiembre: 69 días. 1 día. MAÑANA VUELVES. Esto no es un sueño.',
+            70: '9 de septiembre: 70 días. ¡MAÑANA! Prepara los abrazos, prepara los besos.',
+            71: '10 de septiembre: ¡HOY! Llegas. Te espero en la casita con un un gran abrazo y muchas lágrimas.'
+        };
+
+        const FRASES_EXTRA = [
+            'Eres el mejor recuerdo que tengo y el mejor futuro que imagino.',
+            'Qatar tiene dunas, pero Cuba tiene tu esencia.',
+            'Los 12,000 km no son nada cuando el amor es infinito.',
+            'Cada atardecer en La Habana me recuerda tus ojos.',
+            'Cuenta los días, pero no cuentes las lágrimas, solo los abrazos que faltan.',
+            'Eres mi niña favorita en todo el mundo.',
+            'El corazón no entiende de husos horarios.',
+            'Vuelve pronto, que no puedo estar sin tí sin ti.',
+            'Si los besos volaran, ya habrías recibido millones.',
+            'Eres la razón por la que mi vida tiene sentido.'
+        ];
+
+        // ================================================================
+        //  ELEMENTOS DOM
+        // ================================================================
+        const diasEl = document.getElementById('dias');
+        const fraseEl = document.getElementById('frase');
+        const botonFrase = document.getElementById('boton-frase');
+        const botonExtrañar = document.getElementById('boton-extrañar');
+        const botonTimeline = document.getElementById('boton-timeline');
+        const horaQatar = document.getElementById('hora-qatar');
+        const horaCuba = document.getElementById('hora-cuba');
+        const distanciaKm = document.getElementById('distancia-km');
+        const diferenciaHoraria = document.getElementById('diferencia-horaria');
+        const contadorJuntos = document.getElementById('contador-juntos');
+        const timelineGrid = document.getElementById('timeline-grid');
+
+        // ================================================================
+        //  1. CONTADOR DE DÍAS PARA QUE VUELVA
+        // ================================================================
+        function actualizarContador() {
+            const ahora = Date.now();
+            const diferencia = FECHA_VUELTA - ahora;
+
+            if (diferencia <= 0) {
+                diasEl.textContent = '¡0!';
+                fraseEl.textContent = '🎉 ¡YA ESTÁS AQUÍ! No hay distancia que pueda con nosotros. Te amo.';
+                iniciarConfeti();
+                return;
+            }
+
+            const dias = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+            diasEl.textContent = dias;
+
+            // Mensaje del día según días transcurridos
+            const fechaInicio = new Date('2026-07-01T00:00:00').getTime();
+            const diasTranscurridos = Math.floor((ahora - fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
+
+            let mensaje = MENSAJES[diasTranscurridos] || null;
+            if (!mensaje) {
+                const indice = Math.floor(Math.random() * FRASES_EXTRA.length);
+                mensaje = FRASES_EXTRA[indice];
+            }
+
+            if (dias <= 5 && dias > 0) {
+                mensaje = '🔥 ' + mensaje + ' ¡YA CASI! 🔥';
+                iniciarConfeti();
+            }
+
+            fraseEl.textContent = mensaje;
+        }
+
+        // ================================================================
+        //  2. HUSOS HORARIOS
+        // ================================================================
+        function actualizarHora() {
+            const ahora = new Date();
+            const qatar = new Date(ahora.toLocaleString('en-US', { timeZone: 'Asia/Qatar' }));
+            const cuba = new Date(ahora.toLocaleString('en-US', { timeZone: 'America/Havana' }));
+
+            horaQatar.textContent = qatar.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            horaCuba.textContent = cuba.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+            // Diferencia horaria en horas
+            const diffHoras = Math.round((qatar.getTime() - cuba.getTime()) / (1000 * 60 * 60));
+            diferenciaHoraria.textContent = diffHoras;
+        }
+
+        // ================================================================
+        //  3. MAPA (Leaflet)
+        // ================================================================
+        let mapa;
+
+        function initMapa() {
+            mapa = L.map('mapa', {
+                center: [24.2, -15.4],
+                zoom: 3,
+                zoomControl: false,
+                attributionControl: false,
+            });
+
+            // Estilo oscuro
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap, © CartoDB'
+            }).addTo(mapa);
+
+            // Marcadores
+            const iconoCuba = L.divIcon({ html: '🇨🇺', className: '', iconSize: [30, 30] });
+            const iconoQatar = L.divIcon({ html: '🇶🇦', className: '', iconSize: [30, 30] });
+
+            L.marker([CIUDADES.cuba.lat, CIUDADES.cuba.lng], { icon: iconoCuba })
+                .addTo(mapa)
+                .bindPopup('🇨🇺 Sancti Spíritus, Cuba<br><i>Donde te espero</i>');
+
+            L.marker([CIUDADES.qatar.lat, CIUDADES.qatar.lng], { icon: iconoQatar })
+                .addTo(mapa)
+                .bindPopup('🇶🇦 Doha, Qatar<br><i>Donde estás ahora</i>');
+
+            // Línea curva (arco)
+            const latlngs = [
+                [CIUDADES.cuba.lat, CIUDADES.cuba.lng],
+                [CIUDADES.qatar.lat, CIUDADES.qatar.lng]
+            ];
+
+            // Curva con puntos intermedios
+            const puntosCurva = [];
+            const numPuntos = 50;
+            for (let i = 0; i <= numPuntos; i++) {
+                const t = i / numPuntos;
+                const lat = CIUDADES.cuba.lat + (CIUDADES.qatar.lat - CIUDADES.cuba.lat) * t;
+                const lng = CIUDADES.cuba.lng + (CIUDADES.qatar.lng - CIUDADES.cuba.lng) * t;
+                // Elevación curva (efecto arco)
+                const elevacion = Math.sin(t * Math.PI) * 12;
+                puntosCurva.push([lat + elevacion * 0.08, lng + elevacion * 0.12]);
+            }
+
+            const polyline = L.polyline(puntosCurva, {
+                color: '#facc7c',
+                weight: 2,
+                opacity: 0.6,
+                dashArray: '6, 8',
+                lineJoin: 'round'
+            }).addTo(mapa);
+
+            // Animación de puntos sobre la línea
+            L.polylineDecorator(polyline, {
+                patterns: [{
+                    offset: 0,
+                    repeat: 30,
+                    symbol: L.Symbol.marker({
+                        rotate: false,
+                        markerOptions: {
+                            icon: L.divIcon({
+                                html: '❤️',
+                                className: '',
+                                iconSize: [14, 14]
+                            })
+                        }
+                    })
+                }]
+            }).addTo(mapa);
+
+            // Calcular distancia (fórmula de Haversine)
+            const R = 6371;
+            const dLat = (CIUDADES.qatar.lat - CIUDADES.cuba.lat) * Math.PI / 180;
+            const dLng = (CIUDADES.qatar.lng - CIUDADES.cuba.lng) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(CIUDADES.cuba.lat * Math.PI / 180) *
+                Math.cos(CIUDADES.qatar.lat * Math.PI / 180) *
+                Math.sin(dLng / 2) ** 2;
+            const distancia = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            distanciaKm.textContent = Math.round(distancia);
+
+            // Ajustar vista
+            setTimeout(() => mapa.invalidateSize(), 300);
+        }
+
+        // ================================================================
+        //  4. LÍNEA DE TIEMPO CON FOTOS
+        // ================================================================
+        let timelineVisible = false;
+
+        function renderTimeline() {
+            if (!timelineVisible) {
+                timelineGrid.innerHTML = `
+                    <div class="sin-fotos">
+                        Haz clic en "Mostrar línea de tiempo" para ver nuestros momentos ❤️
+                    </div>
+                `;
+                return;
+            }
+
+            if (!FOTOS_TIMELINE || FOTOS_TIMELINE.length === 0) {
+                timelineGrid.innerHTML = `
+                    <div class="sin-fotos">
+                        📸 Sube tus fotos a Imgur y agrégalas en el array FOTOS_TIMELINE<br>
+                        <span style="font-size:0.8rem;color:#6a6a7e;">(Instrucciones en el código)</span>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            FOTOS_TIMELINE.forEach(item => {
+                html += `
+                    <div class="timeline-item">
+                        <img src="${item.img}" alt="Foto" loading="lazy" onerror="this.style.display='none'">
+                        <div class="info">
+                            <div class="fecha">📅 ${item.fecha}</div>
+                            <div class="texto">${item.texto}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            timelineGrid.innerHTML = html;
+        }
+
+        botonTimeline.addEventListener('click', () => {
+            timelineVisible = !timelineVisible;
+            botonTimeline.textContent = timelineVisible ? '🔼 Ocultar línea de tiempo' : '🖼️ Mostrar línea de tiempo';
+            renderTimeline();
+        });
+
+        // ================================================================
+        //  5. CONTADOR DE DÍAS JUNTOS
+        // ================================================================
+        function actualizarDiasJuntos() {
+            const ahora = new Date();
+            const diff = ahora - FECHA_INICIO_RELACION;
+            const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+            contadorJuntos.textContent = dias.toLocaleString();
+        }
+
+        // ================================================================
+        //  6. CONFETI
+        // ================================================================
+        let confetiActivo = false;
+        let animationId = null;
+        let confetiArray = [];
+        const canvas = document.getElementById('confeti-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Confeti {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height - canvas.height;
+                this.w = 6 + Math.random() * 6;
+                this.h = 4 + Math.random() * 4;
+                this.color = ['#facc7c', '#f5b34b', '#e8454a', '#2b7a78', '#f0e9d8', '#ff6b6b', '#ffd93d', '#4ecdc4'][Math.floor(
+                    Math.random() * 8)];
+                this.velY = 2 + Math.random() * 3;
+                this.velX = -1 + Math.random() * 2;
+                this.rotation = Math.random() * 360;
+                this.rotVel = -3 + Math.random() * 6;
+            }
+
+            update() {
+                this.y += this.velY;
+                this.x += this.velX;
+                this.rotation += this.rotVel;
+                if (this.y > canvas.height) {
+                    this.y = -20;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
+                ctx.restore();
+            }
+        }
+
+        function iniciarConfeti() {
+            if (confetiActivo) return;
+            confetiActivo = true;
+
+            for (let i = 0; i < 140; i++) {
+                confetiArray.push(new Confeti());
+            }
+
+            function animarConfeti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confetiArray.forEach(c => { c.update();
+                    c.draw(); });
+                animationId = requestAnimationFrame(animarConfeti);
+            }
+            animarConfeti();
+
+            setTimeout(() => {
+                confetiActivo = false;
+                if (animationId) cancelAnimationFrame(animationId);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                confetiArray = [];
+            }, 16000);
+        }
+
+        // ================================================================
+        //  7. BOTÓN "PRESIONA SI ME EXTRAÑAS"
+        // ================================================================
+        botonExtrañar.addEventListener('click', () => {
+            const ahora = Date.now();
+            const diferencia = FECHA_VUELTA - ahora;
+            const dias = Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+
+            let mensaje = '';
+            if (dias <= 0) {
+                mensaje = '🎉 ¡YA ESTÁS AQUÍ! No hace falta extrañarme, estoy contigo.';
+            } else if (dias === 1) {
+                mensaje = '💖 ¡MAÑANA VUELVES! Un solo día, mi amor. Te espero.';
+            } else {
+                mensaje = `💔 Te extraño tanto... pero faltan solo ${dias} días para tenerte de nuevo. ¡Fuerza, mi reina!`;
+            }
+
+            // Mostrar mensaje en la frase
+            fraseEl.textContent = '💕 ' + mensaje;
+
+            // Lanzar confeti
+            iniciarConfeti();
+
+            // Efecto visual en el botón
+            botonExtrañar.style.transform = 'scale(0.95)';
+            setTimeout(() => botonExtrañar.style.transform = 'scale(1)', 200);
+        });
+
+        // ================================================================
+        //  8. BOTÓN "NUEVA FRASE"
+        // ================================================================
+        botonFrase.addEventListener('click', () => {
+            const indice = Math.floor(Math.random() * FRASES_EXTRA.length);
+            fraseEl.textContent = '💬 ' + FRASES_EXTRA[indice];
+            fraseEl.style.transform = 'scale(0.96)';
+            setTimeout(() => fraseEl.style.transform = 'scale(1)', 150);
+        });
+
+        // ================================================================
+        //  9. INICIALIZAR TODO
+        // ================================================================
+        function actualizarTodo() {
+            actualizarContador();
+            actualizarHora();
+            actualizarDiasJuntos();
+        }
+
+        // Inicializar mapa cuando cargue
+        window.addEventListener('load', () => {
+            initMapa();
+            actualizarTodo();
+            renderTimeline();
+        });
+
+        // Actualizar cada segundo
+        setInterval(actualizarTodo, 1000);
+
+        // Confeti automático cuando llegue el día
+        setInterval(() => {
+            if (Date.now() >= FECHA_VUELTA) {
+                iniciarConfeti();
+            }
+        }, 10000);
+
+        console.log('💛 Sorpresa para mi amor en Qatar. ¡Te amo!');
+        console.log('📸 Recuerda subir tus fotos a Imgur y poner los enlaces en FOTOS_TIMELINE');
+    </script>
+
+</body>
+</html>
